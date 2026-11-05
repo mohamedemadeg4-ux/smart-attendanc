@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Attendance | لوحة الدكتور</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --navy: #0f172a;
+  --navy-light: #1e293b;
+  --navy-accent: #334155;
+  --blue: #2563eb;
+  --blue-hover: #1d4ed8;
+  --blue-soft: #eff6ff;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 16px;
+  --shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:'Cairo',sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body{
+  background:linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  background-attachment: fixed;
+  color:var(--text);
+  min-height:100vh;
+  padding:24px 16px 40px;
+}
+
+.container{
+  max-width:850px;
+  margin:auto;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header{
+  background:linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color:white;
+  padding:28px 24px;
+  border-radius:20px;
+  margin-bottom:24px;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.15);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.15), transparent 60%);
+  pointer-events: none;
+}
+
+.header .tag{
+  font-size:11px;
+  color:#93c5fd;
+  font-weight:800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.header h1{
+  font-size:26px;
+  font-weight:900;
+  margin:4px 0 8px;
+  letter-spacing: -0.5px;
+}
+
+.header p{
+  font-size:13px;
+  color:#cbd5e1;
+  line-height:1.8;
+  font-weight:500;
+}
+
+.section-title{
+  font-size:19px;
+  font-weight:800;
+  margin:28px 0 14px;
+  color:var(--navy);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subjects{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+
+.subject{
+  background:var(--card-bg);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 16px;
+  text-align:right;
+  cursor:pointer;
+  transition:var(--transition);
+  box-shadow:var(--shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+
+.subject:hover{
+  border-color:var(--blue);
+  transform:translateY(-2px);
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.12);
+}
+
+.subject:active{
+  transform:scale(.98);
+}
+
+.subject .number{
+  width:36px;
+  height:36px;
+  border-radius:12px;
+  background:var(--blue-soft);
+  color:var(--blue);
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  font-size:15px;
+  margin-bottom:12px;
+  transition: var(--transition);
+}
+
+.subject:hover .number {
+  background: var(--blue);
+  color: white;
+}
+
+.subject h3{
+  font-size:15px;
+  color:var(--navy);
+  font-weight:800;
+  line-height: 1.5;
+}
+
+.subject p{
+  font-size:11px;
+  color:var(--muted);
+  margin-top:6px;
+  font-weight:600;
+}
+
+.panel{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px 20px;
+  margin-top:20px;
+  box-shadow:var(--shadow);
+}
+
+.panel h2{
+  font-size:17px;
+  margin-bottom:8px;
+  color:var(--navy);
+  font-weight:800;
+}
+
+.panel p{
+  font-size:13px;
+  color:var(--muted);
+  line-height:1.8;
+  font-weight:500;
+}
+
+.btn{
+  border:0;
+  border-radius:12px;
+  padding:13px 18px;
+  font-size:14px;
+  font-weight:800;
+  cursor:pointer;
+  transition:var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.btn:active {
+  transform: scale(.98);
+}
+
+.blue{
+  background:var(--blue);
+  color:white;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+}
+
+.blue:hover {
+  background: var(--blue-hover);
+}
+
+.gray{
+  background:#f1f5f9;
+  color:var(--navy-accent);
+  border: 1px solid var(--border);
+}
+
+.gray:hover {
+  background: #e2e8f0;
+}
+
+.full{
+  width:100%;
+  margin-top:14px;
+}
+
+input[type=file]{
+  width:100%;
+  padding:14px;
+  border:2px dashed #cbd5e1;
+  border-radius:12px;
+  margin:14px 0;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+input[type=file]:hover {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+}
+
+#passwordModal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal{
+  background:var(--card-bg);
+  width:100%;
+  max-width:400px;
+  border-radius:20px;
+  padding:26px 22px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.2);
+  border: 1px solid var(--border);
+  text-align: center;
+}
+
+.modal h2{
+  font-size:20px;
+  color:var(--navy);
+  margin-bottom:6px;
+  font-weight:900;
+}
+
+.modal p{
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:18px;
+  line-height: 1.7;
+}
+
+.modal input[type=password],.modal input[type=text]{
+  width:100%;
+  padding:14px;
+  border:1.5px solid var(--border);
+  border-radius:12px;
+  outline:none;
+  font-size:16px;
+  background: #fafafa;
+  text-align: center;
+  transition: var(--transition);
+  margin-bottom: 10px;
+}
+
+.modal input:focus{
+  border-color:var(--blue);
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.error{
+  display:none;
+  color:#dc2626;
+  font-size:12px;
+  font-weight:700;
+  margin: 6px 0 12px;
+  background: #fef2f2;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+}
+
+.footer{
+  text-align:center;
+  color:var(--muted);
+  font-size:12px;
+  margin:30px 0 10px;
+  font-weight:600;
+}
+
+#importMessage{
+  font-size:13px;
+  line-height:1.8;
+  margin-top:12px;
+  overflow-wrap:anywhere;
+  font-weight:700;
+  color: #059669;
+}
+
+@media(max-width:500px){
+  .subjects{grid-template-columns: 1fr;}
+}
+
+@media(max-width:380px){
+  body{padding:14px 10px 30px;}
+  .header{padding:20px 16px;}
+  .subjects{gap:10px;}
+  .subject{padding:16px 14px;}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header class="header">
+<div class="tag">SMART ATTENDANCE SYSTEM</div>
+<h1>لوحة تحكم الدكتور</h1>
+<p>مرحبًا بك في نظام الحضور الذكي<br>اختر المادة الدراسية لبدء تسجيل حضور الطلاب.</p>
+</header>
+
+<h2 class="section-title">المواد الدراسية</h2>
+
+<div class="subjects" id="subjectsGrid"></div>
+
+<div class="panel">
+<h2>إدارة بيانات الطلاب</h2>
+<p>يمكنك استيراد بيانات الطلاب من ملف Excel أو CSV. يتم حفظ القائمة في المتصفح لاستخدامها في صفحة الماسح.</p>
+<button class="btn blue full" onclick="openStudentImport()">📥 استيراد بيانات الطلاب</button>
+<div id="importMessage"></div>
+</div>
+
+<div class="panel">
+<h2>معلومات النظام</h2>
+<p>• عدد المواد الدراسية: 9 مواد.</p>
+<p>• عدد الشعب: 16 شعبة.</p>
+<p>• الحد الأقصى للطلاب في الشعبة: 50 طالبًا.</p>
+<p>• يتم فصل سجل الحضور لكل مادة عن المواد الأخرى.</p>
+</div>
+
+<div class="footer">Smart Attendance © 2026 - نظام الحضور الذكي</div>
+</div>
+
+<div id="passwordModal">
+<div class="modal">
+<h2 id="modalTitle">دخول المادة</h2>
+<p>أدخل كلمة مرور المادة للانتقال إلى تسجيل الحضور.</p>
+<input type="password" id="subjectPassword" placeholder="كلمة مرور المادة">
+<div class="error" id="modalError">كلمة المرور غير صحيحة.</div>
+<button class="btn blue full" onclick="verifyPassword()">دخول</button>
+<button class="btn gray full" onclick="closePasswordModal()">إلغاء</button>
+</div>
+</div>
+
+<script>
+"use strict";
+
+const STUDENTS_KEY = "SmartAttendanceStudentsV1";
+const IMPORT_PASSWORD = "SA2026@Admin";
+
+const subjects = [
+ {name:"قضايا مجتمعية",password:"1111"},
+ {name:"مبادئ الإدارة الرياضية",password:"2222"},
+ {name:"ألعاب القوى (1)",password:"3333"},
+ {name:"مدخل وتاريخ التربية الرياضية",password:"4444"},
+ {name:"كاراتيه (1)",password:"5555"},
+ {name:"كرة القدم (1)",password:"6666"},
+ {name:"كرة اليد (1)",password:"7777"},
+ {name:"تمرينات (1)",password:"8888"},
+ {name:"التشريح للرياضيين",password:"9999"}
+];
+
+let selectedSubject = null;
+
+function renderSubjects(){
+ const grid = document.getElementById("subjectsGrid");
+ grid.replaceChildren();
+
+ subjects.forEach((subject,index)=>{
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "subject";
+
+  const number = document.createElement("div");
+  number.className = "number";
+  number.textContent = String(index+1);
+
+  const title = document.createElement("h3");
+  title.textContent = subject.name;
+
+  const hint = document.createElement("p");
+  hint.textContent = "اضغط للدخول إلى المادة";
+
+  card.append(number,title,hint);
+  card.onclick = ()=>openSubject(subject);
+
+  grid.appendChild(card);
+ });
+}
+
+function openSubject(subject){
+ selectedSubject = subject;
+ document.getElementById("modalTitle").textContent = subject.name;
+ document.getElementById("subjectPassword").value = "";
+ document.getElementById("modalError").style.display = "none";
+ document.getElementById("passwordModal").style.display = "flex";
+
+ setTimeout(()=>{
+  document.getElementById("subjectPassword").focus();
+ },100);
+}
+
+function closePasswordModal(){
+ document.getElementById("passwordModal").style.display = "none";
+ selectedSubject = null;
+}
+
+function verifyPassword(){
+
+ if(!selectedSubject) return;
+
+ const entered = document
+  .getElementById("subjectPassword")
+  .value.trim();
+
+ if(entered === selectedSubject.password){
+
+  const subject = encodeURIComponent(selectedSubject.name);
+
+  window.location.href = "./scanner.html?subject=" + subject;
+
+ }else{
+
+  document.getElementById("modalError").style.display = "block";
+
+  document.getElementById("subjectPassword").value = "";
+
+  document.getElementById("subjectPassword").focus();
+ }
+}
+
+document.getElementById("subjectPassword").addEventListener("keydown",function(e){
+ if(e.key === "Enter") verifyPassword();
+});
+
+document.getElementById("passwordModal").addEventListener("click",function(e){
+ if(e.target.id === "passwordModal") closePasswordModal();
+});
+
+/* استيراد بيانات الطلاب */
+
+function openStudentImport(){
+
+ const password = prompt("أدخل كلمة مرور إدارة بيانات الطلاب:");
+
+ if(password === null) return;
+
+ if(password !== IMPORT_PASSWORD){
+  alert("كلمة المرور غير صحيحة.");
+  return;
+ }
+
+ const fileInput = document.createElement("input");
+ fileInput.type = "file";
+ fileInput.accept = ".xlsx,.xls,.csv";
+
+ fileInput.onchange = async function(){
+
+  const file = fileInput.files[0];
+  if(!file) return;
+
+  if(!window.XLSX){
+   alert("تعذر تحميل مكتبة Excel. تحقق من اتصال الإنترنت.");
+   return;
+  }
+
+  try{
+   const workbook = XLSX.read(await file.arrayBuffer(),{
+    type:"array",
+    raw:false,
+    codepage:65001
+   });
+
+   const sheet = workbook.Sheets[workbook.SheetNames[0]];
+   const rows = XLSX.utils.sheet_to_json(sheet,{
+    header:1,
+    defval:"",
+    raw:false
+   });
+
+   if(!rows || rows.length < 2){
+    throw new Error("الملف فارغ أو لا يحتوي على بيانات.");
+   }
+
+   const normalize = value => String(value || "")
+    .trim().toLowerCase()
+    .replace(/[\s_\-ـ]/g,"")
+    .replace(/[أإآ]/g,"ا")
+    .replace(/ى/g,"ي");
+
+   const digits = value => String(value == null ? "" : value)
+    .trim()
+    .replace(/\.0$/,"")
+    .replace(/[٠-٩]/g,d=>String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+    .replace(/[۰-۹]/g,d=>String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)));
+
+   const headers = rows[0];
+
+   const findColumn = names =>
+    headers.findIndex(h=>names.map(normalize).includes(normalize(h)));
+
+   const nameIndex = findColumn(["الاسم","الاسم الرباعي","الاسم الرباعى","الاسم الكامل","name","fullname","studentname"]);
+   const nationalIndex = findColumn(["الرقم القومي","الرقم القومى","nationalid","nationalnumber"]);
+   const sectionIndex = findColumn(["الشعبة","رقم الشعبة","section","sectionnumber"]);
+   const serialIndex = findColumn(["المتسلسل","الرقم المسلسل","serial","serialnumber"]);
+
+   if([nameIndex,nationalIndex,sectionIndex,serialIndex].some(x=>x<0)){
+    throw new Error("الأعمدة المطلوبة: الاسم الرباعي، الرقم القومي، الشعبة، المتسلسل.");
+   }
+
+   const students = [];
+   const nationalIds = new Set();
+   const positions = new Set();
+   const errors = [];
+
+   for(let i=1;i<rows.length;i++){
+
+    const row = rows[i];
+    if(!row || row.every(v=>String(v || "").trim()==="")) continue;
+
+    const name = String(row[nameIndex] || "").trim().replace(/\s+/g," ");
+    const nationalId = digits(row[nationalIndex]);
+    const section = Number(digits(row[sectionIndex]));
+    const serial = Number(digits(row[serialIndex]));
+
+    if(!name){
+     errors.push("الصف "+(i+1)+": الاسم فارغ");
+     continue;
+    }
+
+    if(!/^\d{14}$/.test(nationalId)){
+     errors.push("الصف "+(i+1)+": الرقم القومي يجب أن يكون 14 رقمًا");
+     continue;
+    }
+
+    if(!Number.isInteger(section) || section<1 || section>16){
+     errors.push("الصف "+(i+1)+": الشعبة غير صحيحة");
+     continue;
+    }
+
+    if(!Number.isInteger(serial) || serial<1 || serial>50){
+     errors.push("الصف "+(i+1)+": المتسلسل غير صحيح");
+     continue;
+    }
+
+    const position = section+"-"+serial;
+
+    if(nationalIds.has(nationalId)){
+     errors.push("الصف "+(i+1)+": الرقم القومي مكرر");
+     continue;
+    }
+
+    if(positions.has(position)){
+     errors.push("الصف "+(i+1)+": الشعبة والمتسلسل مكرران");
+     continue;
+    }
+
+    nationalIds.add(nationalId);
+    positions.add(position);
+
+    students.push({
+     name,
+     nationalId,
+     section:String(section),
+     serial:String(serial),
+     code:"STU-"+String(section).padStart(2,"0")+"-"+String(serial).padStart(3,"0")
+    });
+   }
+
+   if(errors.length){
+    throw new Error("لم يتم الحفظ. عدد الأخطاء: "+errors.length+"\n"+errors.slice(0,5).join("\n"));
+   }
+
+   if(!students.length){
+    throw new Error("لا توجد سجلات طلاب صالحة.");
+   }
+
+   if(!confirm("تم فحص "+students.length+" طالبًا. سيتم استبدال قائمة الطلاب الحالية. هل تريد المتابعة؟")){
+    return;
+   }
+
+   localStorage.setItem(STUDENTS_KEY,JSON.stringify(students));
+
+   document.getElementById("importMessage").textContent =
+    "تم استيراد "+students.length+" طالب بنجاح.";
+
+   alert("تم استيراد "+students.length+" طالب بنجاح.");
+
+  }catch(error){
+   alert(error.message || "حدث خطأ أثناء استيراد الملف.");
+  }
+ };
+
+ fileInput.click();
+}
+
+renderSubjects();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</body>
+</html>

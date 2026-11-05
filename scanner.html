@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Attendance - نظام الحضور الذكي</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root {
+  --navy: #0f172a;
+  --navy-light: #1e293b;
+  --navy-accent: #334155;
+  --blue: #2563eb;
+  --blue-hover: #1d4ed8;
+  --blue-soft: #eff6ff;
+  --bg: #f8fafc;
+  --card-bg: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --green: #059669;
+  --green-soft: #f0fdf4;
+  --red: #dc2626;
+  --red-soft: #fef2f2;
+  --radius: 16px;
+  --shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:'Cairo',sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body{
+  background:linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+  background-attachment: fixed;
+  color:var(--text);
+  padding:24px 16px 40px;
+  display:flex;
+  justify-content:center;
+  min-height:100vh;
+}
+
+.container{
+  width:100%;
+  max-width:650px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.header, .panel, .stat {
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  margin-bottom:18px;
+  border: 1px solid var(--border);
+}
+
+.header{
+  text-align:center;
+  padding:22px 18px;
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.header::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at top right, rgba(37, 99, 235, 0.15), transparent 60%);
+  pointer-events: none;
+}
+
+.header h2{
+  color:#ffffff;
+  font-size:22px;
+  font-weight:900;
+  margin-bottom: 4px;
+}
+
+.header p{
+  color:#93c5fd;
+  font-size:13px;
+  font-weight:700;
+}
+
+.scanner{
+  position:relative;
+  background:var(--navy);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-bottom:14px;
+  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.2);
+  border: 2px solid var(--border);
+}
+
+#reader{
+  min-height:240px;
+}
+
+#reader video{
+  object-fit:cover;
+}
+
+.sound{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:5;
+  border:0;
+  border-radius:50%;
+  width:42px;
+  height:42px;
+  background:rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  color:white;
+  font-size:18px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sound:hover {
+  transform: scale(1.08);
+  background:var(--navy);
+}
+
+.status{
+  background:var(--blue-soft);
+  border:1px solid #bfdbfe;
+  padding:14px;
+  border-radius:12px;
+  text-align:center;
+  font-size:13px;
+  color:#1e40af;
+  margin-bottom:14px;
+  font-weight:700;
+  line-height:1.7;
+  transition: var(--transition);
+}
+
+.buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.btn{
+  border:0;
+  padding:14px 12px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.btn:active {
+  transform: scale(.98);
+}
+
+.blue{
+  background:var(--blue);
+  color:white;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+.blue:hover { background: var(--blue-hover); }
+
+.green{
+  background:var(--green);
+  color:white;
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+}
+.green:hover { background: #047857; }
+
+.red{
+  background:var(--red);
+  color:white;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+.red:hover { background: #b91c1c; }
+
+.full{width:100%}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.stat{
+  text-align:center;
+  padding:16px 8px;
+  border: 1px solid var(--border);
+  transition: var(--transition);
+}
+
+.stat:hover {
+  transform: translateY(-2px);
+}
+
+.stat small{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:700;
+  margin-bottom: 4px;
+}
+
+.stat strong{
+  font-size:24px;
+  color:var(--navy);
+  font-weight:900;
+}
+
+.panel{
+  padding:18px;
+}
+
+.panel h3{
+  font-size:16px;
+  margin-bottom:12px;
+  color:var(--navy);
+  font-weight:800;
+}
+
+.table-wrap{
+  overflow:auto;
+  max-height:330px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  text-align:center;
+  font-size:13px;
+}
+
+th,td{
+  border:1px solid var(--border);
+  padding:10px 8px;
+}
+
+th{
+  background:#f1f5f9;
+  color:var(--navy);
+  font-weight:800;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+td {
+  font-weight:600;
+}
+
+.present{
+  color:#047857;
+  background:#d1fae5;
+  font-weight:800;
+}
+
+.absent{
+  color:#b91c1c;
+  background:#fee2e2;
+  font-weight:800;
+}
+
+.print-info{
+  text-align:center;
+  background:var(--blue-soft);
+  padding:14px;
+  border-radius:12px;
+  margin-bottom:14px;
+  color:var(--navy);
+  font-weight:700;
+  font-size: 13px;
+  border: 1px solid #bfdbfe;
+}
+
+.camera-info{
+  text-align:center;
+  background:#f1f5f9;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:14px;
+  font-size:12px;
+  color:var(--muted);
+  font-weight:700;
+  border: 1px solid var(--border);
+}
+
+#importModal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  z-index:9999;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal{
+  background:var(--card-bg);
+  width:100%;
+  max-width:430px;
+  padding:26px 22px;
+  border-radius:20px;
+  max-height:92vh;
+  overflow:auto;
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.modal h3{
+  color:var(--navy);
+  margin-bottom:12px;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.modal p{
+  font-size:13px;
+  line-height:1.8;
+  color:var(--muted);
+  margin-bottom:14px;
+  font-weight: 500;
+}
+
+.warning{
+  background:#fffbeb;
+  color:#b45309;
+  padding:12px;
+  border-radius:12px;
+  font-size:12px;
+  line-height:1.8;
+  margin-bottom:14px;
+  border: 1px solid #fde68a;
+  font-weight: 600;
+}
+
+#importMessage{
+  font-size:13px;
+  line-height:1.8;
+  overflow-wrap:anywhere;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+#printableSheet{display:none}
+
+@media(max-width:400px){
+  body{padding:14px 10px 30px;}
+  .buttons{grid-template-columns:1fr;}
+  .stats{gap:6px;}
+  .stat{padding:12px 4px;}
+  .stat strong{font-size:20px;}
+}
+
+@media print{
+  @page{size:A4 landscape;margin:4mm}
+  html,body{display:block!important;margin:0!important;padding:0!important;background:white!important}
+  body>*{display:none!important}
+  #printableSheet{display:block!important;width:100%!important}
+  .section-page{height:190mm;overflow:hidden;page-break-after:always;break-after:page}
+  .section-page:last-child{page-break-after:auto}
+  .print-heading{text-align:center;line-height:1.3;margin-bottom:4px}
+  .print-heading h2{font-size:13px}
+  .print-heading h3{font-size:10px}
+  .print-heading p{font-size:8px}
+  .section-table{width:100%;table-layout:fixed;border-collapse:collapse;font-size:6px}
+  .section-table th,.section-table td{border:1px solid #444;padding:0 1px;height:3.1mm;line-height:1.1;overflow:hidden}
+  .section-table th{background:#e9eef7!important;color:#000!important;print-color-adjust:exact}
+  .section-table .present,.section-table .absent{print-color-adjust:exact}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="header">
+<h2 id="subjectTitle">المادة الدراسية</h2>
+<p>نظام الحضور الذكي - كلية علوم الرياضة</p>
+</div>
+
+<div class="scanner">
+<button class="sound" onclick="toggleSound()" id="soundButton">♫</button>
+<div id="reader"></div>
+</div>
+
+<div class="camera-info" id="cameraLabel">الكاميرا متوقفة</div>
+<div class="status" id="scanStatus">جارٍ تجهيز النظام...</div>
+
+<div class="buttons">
+<button class="btn red full" id="cameraToggle" onclick="toggleCamera()">تشغيل الكاميرا</button>
+<button class="btn blue full" onclick="switchCamera()">🔄 تبديل الأمامية / الخلفية</button>
+</div>
+
+<div class="stats">
+<div class="stat"><small>إجمالي الطلاب</small><strong id="totalCount">0</strong></div>
+<div class="stat"><small>الحاضرون</small><strong id="presentCount">0</strong></div>
+<div class="stat"><small>الغائبون</small><strong id="absentCount">0</strong></div>
+</div>
+
+<div class="panel">
+<h3>آخر الطلاب الذين سجلوا الحضور</h3>
+<div class="table-wrap">
+<table>
+<thead>
+<tr><th>م</th><th>اسم الطالب</th><th>الشعبة</th><th>الحالة</th></tr>
+</thead>
+<tbody id="liveTableBody"></tbody>
+</table>
+</div>
+</div>
+
+<div class="panel">
+<h3>كشوف الحضور والغياب</h3>
+<div class="print-info" id="printInfo">استورد بيانات الطلاب أولًا.</div>
+
+<button class="btn blue full" onclick="openStudentImport()" style="margin-bottom:10px">
+📥 استيراد بيانات الطلاب من Excel أو CSV
+</button>
+
+<button class="btn green full" onclick="printAllSections()">
+📄 طباعة كشوف الشعب في PDF واحد
+</button>
+
+<p style="font-size:12px;color:#6b7280;margin-top:10px;text-align:center">
+كل شعبة موجودة تُطبع في صفحة مستقلة. لا تُنشأ أسماء وهمية.
+</p>
+</div>
+
+</div>
+
+<div id="importModal">
+<div class="modal">
+<h3>📥 استيراد بيانات الطلاب</h3>
+<p>اختر ملف Excel أو CSV وسيتم فحصه قبل الحفظ.</p>
+
+<input type="file" id="studentImportFile" accept=".xlsx,.xls,.csv" style="width:100%;margin:8px 0 15px">
+
+<div class="warning">
+<b>الأعمدة المطلوبة:</b><br>
+الاسم الرباعي | الرقم القومي | الشعبة | المتسلسل<br>
+أو name | nationalId | section | serial<br>
+الشعب 1–16، المتسلسل 1–50، الرقم القومي 14 رقمًا.
+</div>
+
+<p id="importMessage"></p>
+
+<button class="btn green full" id="studentImportButton" onclick="importStudentFile()">فحص الملف واستيراد الطلاب</button>
+
+<button class="btn full" onclick="closeStudentImport()" style="background:#e2e8f0;margin-top:9px;color:var(--navy)">إغلاق</button>
+</div>
+</div>
+
+<div id="printableSheet"></div>
+
+<script>
+"use strict";
+
+/* ==================================
+   إعدادات النظام
+================================== */
+
+const IMPORT_PASSWORD = "SA2026@Admin";
+
+const subjectName =
+    new URLSearchParams(location.search).get("subject") || "المادة الدراسية";
+
+document.getElementById("subjectTitle").textContent = "مادة: " + subjectName;
+
+const STUDENTS_KEY = "SmartAttendanceStudentsV1";
+
+/*
+   التعديل الأساسي:
+   مفتاح مستقل لكل مادة.
+   لا تتداخل سجلات الحضور بين المواد.
+*/
+
+const ATTENDANCE_KEY =
+    "SmartAttendance800DemoV3_" + encodeURIComponent(subjectName.trim());
+
+const LECTURES = 12;
+
+let students = [];
+let records = {};
+let scanner = null;
+let scanning = false;
+let starting = false;
+let facing = "environment";
+let soundOn = true;
+let audio = null;
+let lastScan = 0;
+let lastError = 0;
+
+let resetAttendanceAfterPrint = false;
+
+/* ==================================
+   حماية استيراد الطلاب
+================================== */
+
+function openStudentImport(){
+
+    const password = prompt("🔐 أدخل كلمة مرور استيراد بيانات الطلاب:");
+
+    if(password === null) return;
+
+    if(password !== IMPORT_PASSWORD){
+        alert("❌ كلمة المرور غير صحيحة.\nغير مسموح بالوصول إلى استيراد البيانات.");
+        return;
+    }
+
+    document.getElementById("studentImportFile").value = "";
+    document.getElementById("importMessage").textContent = "";
+    document.getElementById("importModal").style.display = "flex";
+}
+
+/* ==================================
+   إدارة الحالة
+================================== */
+
+function status(t, type = "normal"){
+
+    const e = document.getElementById("scanStatus");
+
+    e.textContent = t;
+    e.style.background =
+        type === "success" ? "#d1fae5" :
+        type === "error" ? "#fee2e2" : "#eff6ff";
+
+    e.style.color =
+        type === "success" ? "#065f46" :
+        type === "error" ? "#991b1b" : "#1e40af";
+}
+
+function loadStudents(){
+
+    try{
+
+        const a = JSON.parse(localStorage.getItem(STUDENTS_KEY) || "null");
+
+        if(!Array.isArray(a)) return [];
+
+        return a.map(s => ({
+            id: String(
+                s.code ||
+                ("STU-" + String(s.section || s.section_number).padStart(2,"0") +
+                "-" + String(s.serial).padStart(3,"0"))
+            ),
+            name: String(s.name || s.full_name || "").trim(),
+            section: Number(s.section || s.section_number),
+            serial: Number(s.serial)
+        })).filter(s =>
+            s.id &&
+            s.name &&
+            Number.isInteger(s.section) &&
+            s.section >= 1 &&
+            s.section <= 16 &&
+            Number.isInteger(s.serial) &&
+            s.serial >= 1 &&
+            s.serial <= 50
+        );
+
+    }catch(e){
+        return [];
+    }
+}
+
+function initData(){
+
+    students = loadStudents();
+    records = {};
+
+    for(let l = 1; l <= LECTURES; l++){
+
+        records[l] = {};
+
+        students.forEach(s => {
+            records[l][s.id] = false;
+        });
+    }
+
+    try{
+
+        const old = JSON.parse(localStorage.getItem(ATTENDANCE_KEY) || "null");
+
+        if(old && old.version === 3 && old.records){
+
+            for(let l = 1; l <= LECTURES; l++){
+
+                if(old.records[l]){
+
+                    students.forEach(s => {
+
+                        if(typeof old.records[l][s.id] === "boolean"){
+                            records[l][s.id] = old.records[l][s.id];
+                        }
+                    });
+                }
+            }
+        }
+
+    }catch(e){}
+}
+
+function saveData(){
+
+    try{
+
+        localStorage.setItem(
+            ATTENDANCE_KEY,
+            JSON.stringify({version:3, records})
+        );
+
+    }catch(e){
+        status("تعذر حفظ الحضور في المتصفح.", "error");
+    }
+}
+
+function presentCount(){
+
+    return students.filter(s =>
+        records[1] && records[1][s.id]
+    ).length;
+}
+
+function updateStats(){
+
+    const p = presentCount();
+
+    document.getElementById("totalCount").textContent = students.length;
+    document.getElementById("presentCount").textContent = p;
+    document.getElementById("absentCount").textContent = students.length - p;
+
+    document.getElementById("printInfo").textContent =
+        "المادة: " + subjectName +
+        " - عدد الطلاب: " + students.length +
+        " - الشعب الموجودة: " + new Set(students.map(s => s.section)).size;
+}
+
+/* ==================================
+   جدول الحضور
+================================== */
+
+function renderTable(){
+
+    const b = document.getElementById("liveTableBody");
+
+    b.replaceChildren();
+
+    const a = students
+        .filter(s => records[1] && records[1][s.id])
+        .slice()
+        .sort((x, y) =>
+            x.serial - y.serial || x.section - y.section
+        )
+        .slice(0, 100);
+
+    if(!a.length){
+
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+
+        td.colSpan = 4;
+
+        td.textContent = students.length
+            ? "لم يتم تسجيل حضور بعد."
+            : "استورد ملف الطلاب لعرض البيانات.";
+
+        tr.appendChild(td);
+        b.appendChild(tr);
+
+        return;
+    }
+
+    a.forEach(s => {
+
+        const tr = document.createElement("tr");
+
+        [s.serial, s.name, "شعبة " + s.section, "ح"].forEach((v, i) => {
+
+            const td = document.createElement("td");
+
+            td.textContent = v;
+
+            if(i === 3) td.className = "present";
+
+            tr.appendChild(td);
+        });
+
+        b.appendChild(tr);
+    });
+}
+
+/* ==================================
+   الصوت
+================================== */
+
+function initAudio(){
+
+    try{
+
+        const C = window.AudioContext || window.webkitAudioContext;
+
+        if(!C) return;
+
+        if(!audio) audio = new C();
+
+        if(audio.state === "suspended") audio.resume();
+
+    }catch(e){}
+}
+
+function tone(f, t, d){
+
+    if(!soundOn || !audio) return;
+
+    const o = audio.createOscillator();
+    const g = audio.createGain();
+
+    o.frequency.value = f;
+
+    o.connect(g);
+    g.connect(audio.destination);
+
+    g.gain.setValueAtTime(.12, t);
+    g.gain.exponentialRampToValueAtTime(.001, t + d);
+
+    o.start(t);
+    o.stop(t + d);
+}
+
+function beep(ok){
+
+    if(!soundOn) return;
+
+    initAudio();
+
+    if(!audio) return;
+
+    const t = audio.currentTime;
+
+    if(ok){
+        tone(523, t, .13);
+        tone(784, t + .14, .2);
+    }else{
+        tone(220, t, .2);
+        tone(165, t + .2, .2);
+    }
+}
+
+function toggleSound(){
+
+    soundOn = !soundOn;
+
+    document.getElementById("soundButton").textContent =
+        soundOn ? "♫" : "♪";
+
+    if(soundOn){
+        initAudio();
+        beep(true);
+    }
+
+    status(soundOn ? "تم تشغيل الصوت." : "تم كتم الصوت.");
+}
+
+/* ==================================
+   قراءة الباركود
+================================== */
+
+function scannedCode(raw){
+
+    try{
+
+        const o = JSON.parse(String(raw).trim());
+
+        if(o.code) return String(o.code).trim();
+        if(o.id) return String(o.id).trim();
+
+    }catch(e){}
+
+    return String(raw || "").trim();
+}
+
+function handleScan(raw){
+
+    const now = Date.now();
+
+    if(now - lastScan < 1200) return;
+
+    const code = scannedCode(raw);
+    const s = students.find(x => x.id === code);
+
+    if(!s){
+
+        if(now - lastError > 1500){
+
+            beep(false);
+
+            status("الباركود غير موجود في قائمة الطلاب المستوردة.", "error");
+
+            lastError = now;
+        }
+
+        lastScan = now;
+        return;
+    }
+
+    if(records[1][s.id]){
+
+        status("الطالب مسجل حضوره بالفعل: " + s.name);
+
+        lastScan = now;
+        return;
+    }
+
+    records[1][s.id] = true;
+    lastScan = now;
+
+    saveData();
+    updateStats();
+    renderTable();
+
+    beep(true);
+
+    status(
+        "تم تسجيل حضور " + s.name + " - الشعبة " + s.section,
+        "success"
+    );
+}
+
+/* ==================================
+   الكاميرا
+================================== */
+
+function cameraUI(){
+
+    document.getElementById("cameraLabel").textContent =
+        scanning
+            ? (facing === "environment" ? "الكاميرا الخلفية تعمل" : "الكاميرا الأمامية تعمل")
+            : "الكاميرا متوقفة";
+
+    const b = document.getElementById("cameraToggle");
+
+    b.textContent = scanning
+        ? "⏹ إيقاف الكاميرا"
+        : "📷 تشغيل الكاميرا";
+
+    b.className = "btn " + (scanning ? "red" : "green") + " full";
+}
+
+async function startCamera(){
+
+    if(starting || scanning) return;
+
+    if(!students.length){
+        status("استورد بيانات الطلاب أولًا لتشغيل الكاميرا.", "error");
+        return;
+    }
+
+    starting = true;
+
+    try{
+
+        if(!window.Html5Qrcode){
+            throw Error("تعذر تحميل مكتبة الكاميرا.");
+        }
+
+        if(!window.isSecureContext && location.hostname !== "localhost"){
+            throw Error("يجب فتح الصفحة عبر HTTPS لتشغيل الكاميرا.");
+        }
+
+        if(!scanner) scanner = new Html5Qrcode("reader");
+
+        const cams = await Html5Qrcode.getCameras();
+
+        const cam = cams && (
+            facing === "environment"
+                ? (
+                    cams.find(c => /back|rear|environment|خلف/i.test(c.label))
+                    || cams[cams.length - 1]
+                )
+                : (
+                    cams.find(c => /front|user|أمام/i.test(c.label))
+                    || cams[0]
+                )
+        );
+
+        if(cam){
+
+            await scanner.start(
+                cam.id,
+                {
+                    fps:10,
+                    qrbox:{width:240,height:240},
+                    aspectRatio:1
+                },
+                handleScan,
+                () => {}
+            );
+
+        }else{
+
+            await scanner.start(
+                {facingMode:facing},
+                {
+                    fps:10,
+                    qrbox:{width:240,height:240},
+                    aspectRatio:1
+                },
+                handleScan,
+                () => {}
+            );
+        }
+
+        scanning = true;
+
+        cameraUI();
+
+        status("وجّه الكاميرا نحو باركود الطالب.", "success");
+
+    }catch(e){
+
+        console.error(e);
+
+        status(
+            "تعذر تشغيل الكاميرا. اسمح لـ Chrome باستخدام الكاميرا وافتح الصفحة عبر HTTPS.",
+            "error"
+        );
+
+    }finally{
+
+        starting = false;
+        cameraUI();
+    }
+}
+
+async function stopCamera(){
+
+    if(starting) return;
+
+    if(scanner && scanning){
+
+        try{
+            await scanner.stop();
+        }catch(e){}
+    }
+
+    scanning = false;
+
+    cameraUI();
+
+    status("الكاميرا متوقفة.");
+}
+
+async function toggleCamera(){
+
+    if(scanning) await stopCamera();
+    else await startCamera();
+}
+
+async function switchCamera(){
+
+    if(starting) return;
+
+    const was = scanning;
+
+    if(was) await stopCamera();
+
+    facing = facing === "environment" ? "user" : "environment";
+
+    cameraUI();
+
+    status(
+        facing === "environment"
+            ? "تم اختيار الخلفية."
+            : "تم اختيار الأمامية."
+    );
+
+    if(was) await startCamera();
+}
+
+/* ==================================
+   نافذة الاستيراد
+================================== */
+
+function closeStudentImport(){
+
+    document.getElementById("importModal").style.display = "none";
+}
+
+function norm(v){
+
+    return String(v || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_\-ـ]/g, "")
+        .replace(/[أإآ]/g, "ا")
+        .replace(/ى/g, "ي")
+        .replace(/[ًٌٍَُِّْ]/g, "");
+}
+
+function digs(v){
+
+    return String(v == null ? "" : v)
+        .trim()
+        .replace(/\.0$/, "")
+        .replace(/[٠-٩]/g, d => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)))
+        .replace(/[۰-۹]/g, d => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)));
+}
+
+/* ==================================
+   استيراد Excel و CSV
+================================== */
+
+async function importStudentFile(){
+
+    const input = document.getElementById("studentImportFile");
+    const msg = document.getElementById("importMessage");
+    const btn = document.getElementById("studentImportButton");
+    const file = input.files && input.files[0];
+
+    if(!file){
+
+        msg.style.color = "#dc2626";
+        msg.textContent = "اختر ملف Excel أو CSV أولًا.";
+
+        return;
+    }
+
+    if(!window.XLSX){
+
+        msg.style.color = "#dc2626";
+        msg.textContent = "مكتبة Excel غير متاحة. تحقق من الإنترنت.";
+
+        return;
+    }
+
+    btn.disabled = true;
+
+    try{
+
+        const wb = XLSX.read(await file.arrayBuffer(), {
+            type:"array",
+            raw:false,
+            codepage:65001
+        });
+
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+
+        const rows = XLSX.utils.sheet_to_json(sheet, {
+            header:1,
+            defval:"",
+            raw:false
+        });
+
+        if(!rows || rows.length < 2){
+            throw Error("الملف فارغ أو لا يحتوي على بيانات.");
+        }
+
+        const h = rows[0];
+
+        const col = aliases =>
+            h.findIndex(x => aliases.map(norm).includes(norm(x)));
+
+        const ni = col([
+            "الاسم",
+            "الاسم الرباعي",
+            "الاسم الرباعى",
+            "الاسم الكامل",
+            "name",
+            "fullname",
+            "studentname"
+        ]);
+
+        const ii = col([
+            "الرقم القومي",
+            "الرقم القومى",
+            "nationalid",
+            "nationalnumber"
+        ]);
+
+        const si = col([
+            "الشعبة",
+            "رقم الشعبة",
+            "section",
+            "sectionnumber"
+        ]);
+
+        const ri = col([
+            "المتسلسل",
+            "الرقم المسلسل",
+            "serial",
+            "serialnumber"
+        ]);
+
+        if([ni,ii,si,ri].some(x => x < 0)){
+            throw Error(
+                "عناوين الأعمدة غير مكتملة. المطلوب: الاسم الرباعي، الرقم القومي، الشعبة، المتسلسل."
+            );
+        }
+
+        const out = [];
+        const ids = new Set();
+        const places = new Set();
+        const errors = [];
+
+        for(let i = 1; i < rows.length; i++){
+
+            const r = rows[i];
+
+            if(!r || r.every(v => String(v || "").trim() === "")){
+                continue;
+            }
+
+            const name = String(r[ni] || "")
+                .trim()
+                .replace(/\s+/g, " ");
+
+            const nationalId = digs(r[ii]);
+            const section = Number(digs(r[si]));
+            const serial = Number(digs(r[ri]));
+
+            if(!name){
+                errors.push("صف " + (i + 1) + ": الاسم فارغ");
+                continue;
+            }
+
+            if(!/^\d{14}$/.test(nationalId)){
+                errors.push("صف " + (i + 1) + ": الرقم القومي يجب أن يكون 14 رقمًا");
+                continue;
+            }
+
+            if(!Number.isInteger(section) || section < 1 || section > 16){
+                errors.push("صف " + (i + 1) + ": الشعبة غير صحيحة");
+                continue;
+            }
+
+            if(!Number.isInteger(serial) || serial < 1 || serial > 50){
+                errors.push("صف " + (i + 1) + ": المتسلسل غير صحيح");
+                continue;
+            }
+
+            const pos = section + "-" + serial;
+
+            if(ids.has(nationalId)){
+                errors.push("صف " + (i + 1) + ": الرقم القومي مكرر");
+                continue;
+            }
+
+            if(places.has(pos)){
+                errors.push("صف " + (i + 1) + ": الشعبة والمتسلسل مكرران");
+                continue;
+            }
+
+            ids.add(nationalId);
+            places.add(pos);
+
+            out.push({
+                name,
+                nationalId,
+                section:String(section),
+                serial:String(serial),
+                code:"STU-" + String(section).padStart(2,"0") +
+                     "-" + String(serial).padStart(3,"0")
+            });
+        }
+
+        if(errors.length){
+
+            throw Error(
+                "لم يتم الحفظ لوجود " + errors.length +
+                " خطأ. " + errors.slice(0,5).join(" | ")
+            );
+        }
+
+        if(!out.length){
+            throw Error("لا توجد سجلات طلاب صالحة.");
+        }
+
+        if(!confirm(
+            "تم فحص " + out.length +
+            " طالبًا. سيتم استبدال القائمة الحالية. هل تريد المتابعة؟"
+        )){
+            return;
+        }
+
+        localStorage.setItem(STUDENTS_KEY, JSON.stringify(out));
+
+        initData();
+        saveData();
+
+        updateStats();
+        renderTable();
+
+        msg.style.color = "#047857";
+        msg.textContent = "تم استيراد " + students.length + " طالب بنجاح.";
+
+        status("تم تحميل بيانات الطلاب. يمكنك تشغيل الكاميرا.", "success");
+
+    }catch(e){
+
+        msg.style.color = "#dc2626";
+        msg.textContent = e.message || "حدث خطأ أثناء قراءة الملف.";
+
+    }finally{
+
+        btn.disabled = false;
+    }
+}
+
+document.getElementById("importModal").addEventListener("click", e => {
+
+    if(e.target.id === "importModal"){
+        closeStudentImport();
+    }
+});
+
+/* ==================================
+   طباعة كشوف الحضور
+================================== */
+
+function printAllSections(){
+
+    if(!students.length){
+
+        status("استورد بيانات الطلاب قبل الطباعة.", "error");
+
+        return;
+    }
+
+    const wrap = document.createElement("div");
+
+    for(let sec = 1; sec <= 16; sec++){
+
+        const list = students
+            .filter(s => s.section === sec)
+            .sort((a,b) => a.serial - b.serial);
+
+        if(!list.length) continue;
+
+        const page = document.createElement("div");
+        page.className = "section-page";
+
+        const head = document.createElement("div");
+        head.className = "print-heading";
+
+        [
+            ["h2","جامعة الفيوم"],
+            ["h3","كلية علوم الرياضة"],
+            ["h3","كشف حضور وغياب"],
+            ["h3","المادة: " + subjectName],
+            ["h3","الشعبة رقم " + sec],
+            ["p","بيانات مستوردة - العام الجامعي 2026 / 2027"]
+        ].forEach(([tag,t]) => {
+
+            const e = document.createElement(tag);
+            e.textContent = t;
+            head.appendChild(e);
+        });
+
+        page.appendChild(head);
+
+        const table = document.createElement("table");
+        table.className = "section-table";
+
+        const titles = [
+            "م",
+            "اسم الطالب",
+            "الشعبة",
+            "المتسلسل",
+            ...Array.from({length:LECTURES}, (_,i) => "م" + (i + 1)),
+            "ملاحظات"
+        ];
+
+        const thead = document.createElement("thead");
+        const trh = document.createElement("tr");
+
+        titles.forEach(t => {
+
+            const th = document.createElement("th");
+            th.textContent = t;
+            trh.appendChild(th);
+        });
+
+        thead.appendChild(trh);
+        table.appendChild(thead);
+
+        const tb = document.createElement("tbody");
+
+        list.forEach(s => {
+
+            const tr = document.createElement("tr");
+
+            [s.serial, s.name, s.section, s.serial].forEach(v => {
+
+                const td = document.createElement("td");
+                td.textContent = v;
+                tr.appendChild(td);
+            });
+
+            for(let l = 1; l <= LECTURES; l++){
+
+                const td = document.createElement("td");
+
+                if(l === 1){
+
+                    const yes = !!(records[1] && records[1][s.id]);
+
+                    td.textContent = yes ? "ح" : "غ";
+                    td.className = yes ? "present" : "absent";
+
+                }else{
+
+                    td.textContent = "—";
+                }
+
+                tr.appendChild(td);
+            }
+
+            tr.appendChild(document.createElement("td"));
+            tb.appendChild(tr);
+        });
+
+        table.appendChild(tb);
+        page.appendChild(table);
+        wrap.appendChild(page);
+    }
+
+    if(!wrap.children.length){
+
+        status("لا توجد شعب تحتوي على طلاب للطباعة.", "error");
+
+        return;
+    }
+
+    const p = document.getElementById("printableSheet");
+
+    p.replaceChildren(wrap);
+
+    document.title = "كشوف الحضور - " + subjectName;
+
+    resetAttendanceAfterPrint = true;
+
+    window.print();
+}
+
+/* ==================================
+   تصفير الحضور بعد إغلاق الطباعة
+================================== */
+
+window.addEventListener("afterprint", function(){
+
+    if(!resetAttendanceAfterPrint) return;
+
+    resetAttendanceAfterPrint = false;
+
+    for(let l = 1; l <= LECTURES; l++){
+
+        records[l] = {};
+
+        students.forEach(s => {
+            records[l][s.id] = false;
+        });
+    }
+
+    saveData();
+
+    updateStats();
+    renderTable();
+
+    status(
+        "تم تصفير حضور مادة " + subjectName +
+        " بنجاح. يمكنك بدء تسجيل محاضرة جديدة.",
+        "success"
+    );
+});
+
+/* ==================================
+   تشغيل النظام
+================================== */
+
+initData();
+
+updateStats();
+renderTable();
+cameraUI();
+
+window.addEventListener("load", () => {
+
+    if(students.length){
+        startCamera();
+    }else{
+        status("استورد بيانات الطلاب أولًا لبدء تسجيل الحضور.");
+    }
+});
+</script>
+
+</body>
+</html>

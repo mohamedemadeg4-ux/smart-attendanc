@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101a2e">
+<title>Smart Attendance | بوابة الطالب</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<style>
+:root{
+ --navy:#101a2e;
+ --navy2:#172641;
+ --navy3:#253a5b;
+ --gold:#bd9148;
+ --gold2:#e6c77e;
+ --gold-light:#f8f0df;
+ --bg:#f3f4f6;
+ --white:#fff;
+ --text:#202c3e;
+ --muted:#8490a1;
+ --line:#e9ebef;
+ --green:#168568;
+ --red:#c04444;
+ --shadow:0 18px 55px rgba(16,26,46,.09);
+ --radius:22px;
+}
+
+*{
+ box-sizing:border-box;
+ margin:0;
+ padding:0;
+ font-family:"Cairo",sans-serif;
+ -webkit-tap-highlight-color:transparent;
+}
+
+body{
+ min-height:100vh;
+ color:var(--text);
+ background:
+ radial-gradient(circle at 5% 5%,rgba(189,145,72,.12),transparent 27%),
+ radial-gradient(circle at 95% 85%,rgba(37,58,91,.07),transparent 30%),
+ #f4f5f7;
+ padding:22px 14px 40px;
+}
+
+button,input,select{font:inherit}
+
+.page{
+ max-width:540px;
+ margin:auto;
+ animation:showPage .6s ease;
+}
+
+@keyframes showPage{
+ from{opacity:0;transform:translateY(15px)}
+ to{opacity:1;transform:translateY(0)}
+}
+
+.header{
+ text-align:center;
+ margin-bottom:22px;
+}
+
+.logo{
+ width:76px;
+ height:76px;
+ margin:auto;
+ display:grid;
+ place-items:center;
+ border-radius:24px;
+ color:var(--gold2);
+ font-size:29px;
+ font-weight:900;
+ letter-spacing:2px;
+ background:linear-gradient(145deg,#0c1527,#293e5e);
+ border:1px solid rgba(230,199,126,.7);
+ box-shadow:0 13px 30px rgba(16,26,46,.19);
+ position:relative;
+}
+
+.logo:after{
+ content:"";
+ position:absolute;
+ inset:6px;
+ border:1px solid rgba(230,199,126,.3);
+ border-radius:18px;
+}
+
+.header h1{
+ color:var(--navy);
+ font-size:26px;
+ font-weight:900;
+ margin-top:12px;
+}
+
+.header p{
+ color:var(--muted);
+ font-size:12px;
+ font-weight:700;
+}
+
+.header-line{
+ width:65px;
+ height:3px;
+ border-radius:5px;
+ margin:12px auto 0;
+ background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+
+.panel{
+ background:rgba(255,255,255,.97);
+ border:1px solid rgba(189,145,72,.22);
+ border-radius:var(--radius);
+ padding:26px 22px;
+ box-shadow:var(--shadow);
+ position:relative;
+ overflow:hidden;
+}
+
+.panel:before{
+ content:"";
+ position:absolute;
+ top:0;
+ right:0;
+ left:0;
+ height:4px;
+ background:linear-gradient(90deg,var(--navy),var(--gold2),var(--navy));
+}
+
+.section-label{
+ color:var(--gold);
+ font-size:10px;
+ font-weight:900;
+ letter-spacing:1.8px;
+}
+
+.panel h2{
+ color:var(--navy);
+ font-size:21px;
+ font-weight:900;
+ margin-top:4px;
+}
+
+.description{
+ color:var(--muted);
+ font-size:12px;
+ line-height:2;
+ font-weight:600;
+ margin:4px 0 22px;
+}
+
+.form-group{margin-bottom:16px}
+
+label{
+ display:block;
+ color:var(--navy2);
+ font-size:12px;
+ font-weight:900;
+ margin-bottom:7px;
+}
+
+.input-box{position:relative}
+
+.input-icon{
+ position:absolute;
+ right:14px;
+ top:50%;
+ transform:translateY(-50%);
+ color:var(--gold);
+ font-size:16px;
+ pointer-events:none;
+}
+
+input,select{
+ width:100%;
+ min-height:52px;
+ border:1.5px solid #e5e8ed;
+ border-radius:13px;
+ background:#fbfcfd;
+ padding:11px 43px 11px 13px;
+ color:var(--text);
+ font-size:13px;
+ font-weight:700;
+ outline:none;
+ transition:.25s;
+}
+
+input::placeholder{color:#a7afbb;font-weight:500}
+
+input:focus,select:focus{
+ border-color:var(--gold);
+ background:#fff;
+ box-shadow:0 0 0 4px rgba(189,145,72,.12);
+}
+
+select{
+ appearance:none;
+ cursor:pointer;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23778397' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+ background-repeat:no-repeat;
+ background-position:left 13px center;
+ padding-left:38px;
+}
+
+.hint{
+ color:var(--muted);
+ font-size:10px;
+ margin-top:5px;
+ font-weight:600;
+}
+
+.form-row{
+ display:flex;
+ gap:12px;
+}
+
+.form-row .form-group{
+ flex:1;
+ min-width:0;
+}
+
+.btn{
+ width:100%;
+ min-height:51px;
+ border:0;
+ border-radius:13px;
+ padding:12px 15px;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ gap:9px;
+ font-size:13px;
+ font-weight:900;
+ cursor:pointer;
+ transition:.22s;
+}
+
+.btn:active{transform:scale(.985)}
+.btn:disabled{opacity:.6;cursor:wait}
+
+.primary{
+ color:white;
+ background:linear-gradient(115deg,#101a2e,#293e5e);
+ border:1px solid rgba(230,199,126,.65);
+ box-shadow:0 8px 20px rgba(16,26,46,.18);
+}
+
+.primary:hover{filter:brightness(1.1);box-shadow:0 11px 25px rgba(16,26,46,.23)}
+
+.admin-button{
+ width:100%;
+ min-height:48px;
+ margin-top:12px;
+ border-radius:13px;
+ border:1px solid #e6ddcc;
+ background:#fcfaf6;
+ color:var(--navy);
+ font-size:12px;
+ font-weight:900;
+ cursor:pointer;
+ transition:.2s;
+}
+
+.admin-button:hover{
+ background:var(--gold-light);
+ border-color:var(--gold);
+}
+
+.message{
+ display:none;
+ padding:12px 14px;
+ border-radius:12px;
+ font-size:12px;
+ line-height:1.9;
+ font-weight:800;
+ margin-bottom:15px;
+ white-space:pre-line;
+}
+
+.message.error{
+ display:block;
+ background:#fff3f1;
+ border:1px solid #f0c9c4;
+ color:#a93636;
+}
+
+.message.success{
+ display:block;
+ background:#effaf5;
+ border:1px solid #bfe6d4;
+ color:#147354;
+}
+
+.result{
+ display:none;
+ margin-top:27px;
+ padding-top:24px;
+ border-top:1px dashed #d9d4ca;
+ animation:showPage .4s ease;
+}
+
+.result-title{
+ text-align:center;
+ font-size:19px;
+ color:var(--navy);
+ font-weight:900;
+}
+
+.result-subtitle{
+ text-align:center;
+ color:var(--muted);
+ font-size:11px;
+ margin:4px 0 18px;
+}
+
+.student-card{
+ width:100%;
+ background:white;
+ border:1.5px solid var(--gold);
+ border-radius:20px;
+ padding:20px 17px 17px;
+ box-shadow:0 14px 35px rgba(189,145,72,.13);
+ text-align:center;
+ position:relative;
+ overflow:hidden;
+}
+
+.student-card:after{
+ content:"";
+ position:absolute;
+ inset:7px;
+ border:1px solid rgba(189,145,72,.22);
+ border-radius:14px;
+ pointer-events:none;
+}
+
+.card-header{
+ margin:-20px -17px 17px;
+ padding:17px 12px 15px;
+ color:white;
+ background:linear-gradient(135deg,#101a2e,#293e5e);
+ border-bottom:3px solid var(--gold);
+}
+
+.card-logo{
+ color:var(--gold2);
+ font-size:25px;
+ font-weight:900;
+ letter-spacing:2px;
+}
+
+.card-header h3{
+ font-size:17px;
+ font-weight:900;
+}
+
+.card-header p{
+ color:#c5cfdd;
+ font-size:10px;
+}
+
+.card-caption{
+ color:var(--gold);
+ font-size:9px;
+ font-weight:900;
+ letter-spacing:1.5px;
+}
+
+.qr-container{
+ width:208px;
+ max-width:100%;
+ min-height:208px;
+ margin:13px auto;
+ padding:10px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ border:1px solid #e7e7e7;
+ border-radius:13px;
+ background:#fff;
+}
+
+#qrCanvas{
+ width:180px;
+ height:180px;
+ display:block;
+ max-width:100%;
+}
+
+.student-name{
+ color:var(--navy);
+ font-size:18px;
+ line-height:1.8;
+ font-weight:900;
+ overflow-wrap:anywhere;
+ margin-top:8px;
+}
+
+.card-details{
+ margin-top:14px;
+ padding:12px;
+ background:#f8f8f6;
+ border:1px solid #ece8df;
+ border-radius:11px;
+ text-align:right;
+}
+
+.detail{
+ display:flex;
+ gap:7px;
+ line-height:2.2;
+ font-size:12px;
+}
+
+.detail-label{
+ color:var(--muted);
+ font-weight:700;
+ flex-shrink:0;
+}
+
+.detail-value{
+ color:var(--navy);
+ font-weight:900;
+ overflow-wrap:anywhere;
+}
+
+.card-footer{
+ margin-top:13px;
+ padding-top:10px;
+ border-top:1px dashed #e1d9cb;
+ color:#8992a0;
+ font-size:10px;
+ line-height:1.8;
+}
+
+.actions{
+ display:grid;
+ gap:10px;
+ margin-top:16px;
+}
+
+.pdf-btn{
+ color:white;
+ background:linear-gradient(110deg,#a93535,#ce5550);
+}
+
+.png-btn{
+ color:white;
+ background:linear-gradient(110deg,#126b55,#1d9978);
+}
+
+.reset-btn{
+ background:#f1f3f5;
+ color:var(--navy);
+ border:1px solid #e1e4e8;
+}
+
+.footer{
+ text-align:center;
+ color:#8b95a4;
+ font-size:10px;
+ font-weight:700;
+ margin-top:20px;
+}
+
+.footer span{color:var(--gold)}
+
+.modal{
+ display:none;
+ position:fixed;
+ inset:0;
+ z-index:1000;
+ background:rgba(8,16,29,.72);
+ backdrop-filter:blur(7px);
+ justify-content:center;
+ align-items:center;
+ padding:14px;
+ overflow-y:auto;
+}
+
+.modal-content{
+ width:100%;
+ max-width:470px;
+ max-height:92vh;
+ overflow-y:auto;
+ background:white;
+ border:1px solid rgba(230,199,126,.55);
+ border-radius:21px;
+ padding:24px 19px;
+ box-shadow:0 25px 70px rgba(0,0,0,.25);
+ position:relative;
+ text-align:center;
+}
+
+.modal-content:before{
+ content:"";
+ position:absolute;
+ top:0;
+ right:0;
+ left:0;
+ height:4px;
+ background:linear-gradient(90deg,var(--navy),var(--gold2),var(--navy));
+}
+
+.modal-content h3{
+ color:var(--navy);
+ font-size:18px;
+ font-weight:900;
+ margin:4px 0 7px;
+}
+
+.modal-description{
+ color:var(--muted);
+ font-size:11px;
+ line-height:1.9;
+ margin-bottom:15px;
+}
+
+.modal-content input[type=password]{
+ text-align:center;
+ padding:12px;
+ margin-bottom:12px;
+}
+
+.modal-buttons{
+ display:flex;
+ gap:10px;
+ margin-top:12px;
+}
+
+.modal-btn{
+ flex:1;
+ border:0;
+ border-radius:11px;
+ padding:12px;
+ font-size:12px;
+ font-weight:900;
+ cursor:pointer;
+}
+
+.confirm-btn{background:var(--navy);color:white}
+.cancel-btn{background:#eef0f3;color:var(--navy)}
+
+.error-box{
+ display:none;
+ color:#a93636;
+ background:#fff3f1;
+ border:1px solid #f0c9c4;
+ border-radius:9px;
+ padding:9px;
+ margin-bottom:11px;
+ font-size:11px;
+ font-weight:800;
+ line-height:1.7;
+ white-space:pre-line;
+}
+
+.file-label{
+ display:block;
+ padding:18px 12px;
+ border:1.5px dashed #c8b58f;
+ border-radius:13px;
+ background:#fcfaf6;
+ color:var(--navy);
+ font-size:12px;
+ font-weight:900;
+ cursor:pointer;
+ margin-bottom:9px;
+}
+
+.file-label:hover{
+ background:var(--gold-light);
+ border-color:var(--gold);
+}
+
+.file-label input{display:none}
+
+.file-name{
+ color:var(--muted);
+ font-size:10px;
+ margin-bottom:12px;
+ overflow-wrap:anywhere;
+}
+
+.import-warning{
+ background:#fffaf0;
+ border:1px solid #efe0bd;
+ color:#8b672d;
+ border-radius:11px;
+ padding:11px;
+ text-align:right;
+ font-size:10px;
+ line-height:1.9;
+ margin:12px 0;
+ font-weight:600;
+}
+
+.import-result{
+ display:none;
+ text-align:right;
+ background:#effaf5;
+ border:1px solid #bfe6d4;
+ border-radius:11px;
+ padding:12px;
+ margin-top:12px;
+ font-size:11px;
+ line-height:1.9;
+ color:#147354;
+ white-space:pre-line;
+ font-weight:800;
+}
+
+.import-btn{
+ width:100%;
+ background:linear-gradient(110deg,#126b55,#1d9978);
+ color:white;
+ border:0;
+ padding:13px;
+ border-radius:11px;
+ font-weight:900;
+ font-size:12px;
+ cursor:pointer;
+}
+
+.import-btn:disabled{opacity:.55;cursor:wait}
+
+.close-btn{
+ width:100%;
+ margin-top:10px;
+ background:#f0f2f4;
+ color:var(--navy);
+ border:1px solid #e2e5e9;
+ padding:11px;
+ border-radius:11px;
+ font-weight:800;
+ font-size:12px;
+ cursor:pointer;
+}
+
+.preview-wrap{
+ display:none;
+ margin-top:13px;
+ text-align:right;
+}
+
+.preview-title{
+ font-size:12px;
+ font-weight:900;
+ color:var(--navy);
+ margin-bottom:7px;
+}
+
+.preview-table-wrap{
+ max-height:220px;
+ overflow:auto;
+ border:1px solid #e7e8eb;
+ border-radius:10px;
+}
+
+.preview-table{
+ width:100%;
+ border-collapse:collapse;
+ font-size:10px;
+ min-width:390px;
+ background:white;
+}
+
+.preview-table th{
+ background:#f4f1e9;
+ color:#66502c;
+ position:sticky;
+ top:0;
+}
+
+.preview-table th,.preview-table td{
+ padding:7px 6px;
+ border-bottom:1px solid #eceef0;
+ text-align:right;
+ white-space:nowrap;
+}
+
+.preview-note{
+ font-size:10px;
+ color:var(--muted);
+ margin:7px 0;
+ line-height:1.7;
+}
+
+@media(max-width:390px){
+ body{padding:17px 10px 30px}
+ .panel{padding:23px 15px}
+ .form-row{gap:8px}
+ .student-card{padding:19px 14px 15px}
+ .card-header{margin:-19px -14px 15px}
+ .header h1{font-size:23px}
+}
+
+@media print{
+ body{background:white!important;padding:0!important}
+ body *{visibility:hidden!important}
+ #studentCard,#studentCard *{visibility:visible!important}
+ #studentCard{
+  position:absolute!important;
+  top:0!important;
+  right:0!important;
+  width:100%!important;
+  box-shadow:none!important;
+ }
+}
+</style>
+</head>
+
+<body>
+
+<main class="page">
+
+<header class="header">
+ <div class="logo">SA</div>
+ <h1>الحضور الذكي</h1>
+ <p>بوابة الطالب الإلكترونية</p>
+ <div class="header-line"></div>
+</header>
+
+<section class="panel">
+
+ <div class="section-label">STUDENT SERVICES</div>
+ <h2>التحقق من بيانات الطالب</h2>
+ <p class="description">
+ أدخل بياناتك كما هي مسجلة في الكشف الرسمي.
+ عند تطابق البيانات ستتمكن من إنشاء بطاقة الطالب الخاصة بك.
+ </p>
+
+ <div id="message" class="message" role="status"></div>
+
+ <form id="studentForm" autocomplete="off">
+
+  <div class="form-group">
+   <label for="fullName">الاسم الرباعي الكامل</label>
+   <div class="input-box">
+    <span class="input-icon">✦</span>
+    <input id="fullName" type="text" maxlength="150"
+    placeholder="اكتب الاسم كما في الكشف" required>
+   </div>
+  </div>
+
+  <div class="form-group">
+   <label for="nationalId">الرقم القومي</label>
+   <div class="input-box">
+    <span class="input-icon">▤</span>
+    <input id="nationalId" type="text" inputmode="numeric"
+    maxlength="14" placeholder="أدخل 14 رقمًا" required>
+   </div>
+   <p class="hint">يجب أن يتكون الرقم من 14 رقمًا بالضبط.</p>
+  </div>
+
+  <div class="form-row">
+
+   <div class="form-group">
+    <label for="section">الشعبة</label>
+    <div class="input-box">
+     <span class="input-icon">⌂</span>
+     <select id="section" required>
+      <option value="" selected disabled>اختر الشعبة</option>
+     </select>
+    </div>
+   </div>
+
+   <div class="form-group">
+    <label for="serialNumber">المتسلسل</label>
+    <div class="input-box">
+     <span class="input-icon">№</span>
+     <input id="serialNumber" type="number" inputmode="numeric"
+     min="1" max="50" step="1" placeholder="1 - 50" required>
+    </div>
+   </div>
+
+  </div>
+
+  <button class="btn primary" id="verifyButton" type="submit">
+   ✦ التحقق وإنشاء البطاقة
+  </button>
+
+ </form>
+
+ <button class="admin-button" type="button" onclick="openAdminPassword()">
+  🔐 إدارة واستيراد بيانات الطلاب
+ </button>
+
+ <section class="result" id="qrContainer">
+
+  <h2 class="result-title">تم التحقق من البيانات</h2>
+  <p class="result-subtitle">بطاقتك الجامعية جاهزة للحفظ والطباعة.</p>
+
+  <article class="student-card" id="studentCard">
+
+   <div class="card-header">
+    <div class="card-logo">SA</div>
+    <h3>بطاقة الطالب</h3>
+    <p>نظام الحضور الذكي</p>
+   </div>
+
+   <div class="card-caption">STUDENT IDENTIFICATION</div>
+
+   <div class="qr-container">
+    <canvas id="qrCanvas"></canvas>
+   </div>
+
+   <div class="student-name" id="cardName"></div>
+
+   <div class="card-details">
+
+    <div class="detail">
+     <span class="detail-label">الرقم القومي:</span>
+     <span class="detail-value" id="cardNationalId"></span>
+    </div>
+
+    <div class="detail">
+     <span class="detail-label">الشعبة:</span>
+     <span class="detail-value" id="cardSection"></span>
+    </div>
+
+    <div class="detail">
+     <span class="detail-label">المتسلسل:</span>
+     <span class="detail-value" id="cardSerial"></span>
+    </div>
+
+    <div class="detail">
+     <span class="detail-label">كود الطالب:</span>
+     <span class="detail-value" id="cardCode"></span>
+    </div>
+
+   </div>
+
+   <div class="card-footer">
+    بطاقة تعريف إلكترونية للطالب<br>
+    يستخدم رمز QR للتعرّف على سجل الطالب في النظام.
+   </div>
+
+  </article>
+
+  <div class="actions">
+   <button class="btn pdf-btn" id="pdfButton" type="button">
+    ▤ تنزيل البطاقة بصيغة PDF
+   </button>
+
+   <button class="btn png-btn" id="imageButton" type="button">
+    ▧ تنزيل البطاقة بصيغة PNG
+   </button>
+
+   <button class="btn reset-btn" id="resetButton" type="button">
+    ↶ العودة إلى نموذج التحقق
+   </button>
+  </div>
+
+ </section>
+
+</section>
+
+<footer class="footer">
+ الحضور الذكي <span>◆</span> © 2026
+</footer>
+
+</main>
+
+<div class="modal" id="adminPasswordModal">
+ <div class="modal-content">
+  <h3>🔐 دخول إدارة الطلاب</h3>
+  <p class="modal-description">هذه المنطقة مخصصة لمسؤول النظام فقط.</p>
+  <div id="adminPasswordError" class="error-box">كلمة السر غير صحيحة.</div>
+  <input type="password" id="adminPassword" placeholder="كلمة سر المدير" autocomplete="off">
+  <div class="modal-buttons">
+   <button class="modal-btn confirm-btn" type="button" onclick="verifyAdminPassword()">دخول</button>
+   <button class="modal-btn cancel-btn" type="button" onclick="closeAdminPassword()">إلغاء</button>
+  </div>
+ </div>
+</div>
+
+<div class="modal" id="importModal">
+ <div class="modal-content">
+  <h3>إدارة بيانات الطلاب</h3>
+  <p class="modal-description">اختر ملف Excel أو CSV أو PDF يحتوي على بيانات الطلاب، ثم راجع النتائج قبل الحفظ.</p>
+  <label class="file-label">
+   📁 اختر ملف Excel أو CSV أو PDF
+   <input type="file" id="studentsFile" accept=".xlsx,.xls,.csv,.pdf,application/pdf">
+  </label>
+  <div class="file-name" id="fileName">لم يتم اختيار ملف بعد</div>
+  <div class="import-warning">
+   <strong>ترتيب الأعمدة المطلوب:</strong><br>
+   الاسم الرباعي | الرقم القومي | الشعبة | المتسلسل
+  </div>
+  <div id="importError" class="error-box"></div>
+  <div id="importResult" class="import-result"></div>
+  <div id="previewWrap" class="preview-wrap">
+   <div class="preview-title">معاينة البيانات المستخرجة</div>
+   <div class="preview-table-wrap">
+    <table class="preview-table">
+     <thead>
+      <tr>
+       <th>الاسم</th>
+       <th>الرقم القومي</th>
+       <th>الشعبة</th>
+       <th>المتسلسل</th>
+      </tr>
+     </thead>
+     <tbody id="previewBody"></tbody>
+    </table>
+   </div>
+   <p class="preview-note" id="previewNote"></p>
+  </div>
+  <button class="import-btn" id="importButton" type="button" onclick="importStudents()">فحص الملف واستيراد الطلاب</button>
+  <button class="close-btn" type="button" onclick="closeImportModal()">إغلاق</button>
+ </div>
+</div>
+
+<script>
+const STORAGE_KEY = "SmartAttendanceStudentsV1";
+const ADMIN_PASSWORD = "SA2026@Admin";
+
+let pendingStudents = [];
+let importStage = "select";
+let selectedFile = null;
+
+const $ = id => document.getElementById(id);
+const form = $("studentForm");
+const message = $("message");
+const verifyButton = $("verifyButton");
+
+function normalizeDigits(value){
+ const arabic = "٠١٢٣٤٥٦٧٨٩";
+ const persian = "۰۱۲۳۴۵۶۷۸۹";
+ return String(value ?? "")
+ .replace(/[٠-٩]/g,d=>arabic.indexOf(d))
+ .replace(/[۰-۹]/g,d=>persian.indexOf(d))
+ .trim();
+}
+
+function normalizeText(value){
+ return String(value ?? "")
+ .replace(/\u0640/g,"")
+ .replace(/[أإآ]/g,"ا")
+ .replace(/ى/g,"ي")
+ .replace(/\s+/g," ")
+ .trim()
+ .toLowerCase();
+}
+
+function getStudents(){
+ try{
+  const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  return Array.isArray(data) ? data : [];
+ }catch(e){
+  return [];
+ }
+}
+
+function saveStudents(data){
+ localStorage.setItem(STORAGE_KEY,JSON.stringify(data));
+}
+
+function showMessage(text,type){
+ message.className = "message " + type;
+ message.textContent = text;
+ message.style.display = "block";
+}
+
+function hideMessage(){
+ message.className = "message";
+ message.textContent = "";
+ message.style.display = "none";
+}
+
+function showImportError(text){
+ const box = $("importError");
+ box.textContent = text;
+ box.style.display = "block";
+}
+
+function hideImportError(){
+ $("importError").style.display = "none";
+ $("importError").textContent = "";
+}
+
+function makeStudentCode(student){
+ return "SA-" + String(student.section).padStart(2,"0") + "-" + String(student.serial).padStart(2,"0");
+}
+
+function validateStudent(student){
+ if(!student.name) return "من فضلك أدخل الاسم الرباعي.";
+ if(normalizeText(student.name).split(" ").length < 4) return "يجب كتابة الاسم الرباعي كاملًا.";
+ if(!/^\d{14}$/.test(student.nationalId)) return "الرقم القومي يجب أن يتكون من 14 رقمًا.";
+ if(!Number.isInteger(student.section) || student.section<1 || student.section>16) return "رقم الشعبة غير صحيح.";
+ if(!Number.isInteger(student.serial) || student.serial<1 || student.serial>50) return "المتسلسل يجب أن يكون من 1 إلى 50.";
+ return null;
+}
+
+form.addEventListener("submit",function(e){
+ e.preventDefault();
+ hideMessage();
+ const student = {
+  name: $("fullName").value.trim(),
+  nationalId: normalizeDigits($("nationalId").value).replace(/\D/g,""),
+  section: Number($("section").value),
+  serial: Number(normalizeDigits($("serialNumber").value))
+ };
+ const error = validateStudent(student);
+ if(error){
+  showMessage(error,"error");
+  return;
+ }
+ const students = getStudents();
+ if(!students.length){
+  showMessage("لا توجد بيانات طلاب مسجلة في النظام حتى الآن.\nيرجى مراجعة مسؤول النظام لاستيراد كشف الطلاب.","error");
+  return;
+ }
+ const matched = students.find(s =>
+  normalizeDigits(s.nationalId) === student.nationalId &&
+  normalizeText(s.name) === normalizeText(student.name) &&
+  Number(s.section) === student.section &&
+  Number(s.serial) === student.serial
+ );
+ if(!matched){
+  showMessage("لم يتم العثور على طالب مطابق لهذه البيانات.\nتأكد من الاسم والرقم القومي والشعبة والمتسلسل.","error");
+  return;
+ }
+ createStudentCard({
+  name: matched.name,
+  nationalId: matched.nationalId,
+  section: Number(matched.section),
+  serial: Number(matched.serial)
+ });
+ showMessage("تم التحقق من بياناتك بنجاح.","success");
+ $("qrContainer").style.display = "block";
+ $("qrContainer").scrollIntoView({behavior:"smooth",block:"start"});
+});
+
+function createStudentCard(student){
+ const code = makeStudentCode(student);
+ const qrData = JSON.stringify({type:"student", code:code});
+ $("cardName").textContent = student.name;
+ $("cardNationalId").textContent = student.nationalId;
+ $("cardSection").textContent = student.section;
+ $("cardSerial").textContent = student.serial;
+ $("cardCode").textContent = code;
+ if(typeof QRious === "undefined"){
+  showMessage("تعذر تحميل مكتبة إنشاء QR Code. تأكد من اتصال الإنترنت ثم أعد تحميل الصفحة.","error");
+  return;
+ }
+ new QRious({
+  element: $("qrCanvas"),
+  value: qrData,
+  size: 360,
+  level: "H",
+  background: "#ffffff",
+  foreground: "#101a2e"
+ });
+}
+
+$("resetButton").addEventListener("click",function(){
+ $("qrContainer").style.display = "none";
+ form.reset();
+ hideMessage();
+ window.scrollTo({top:0,behavior:"smooth"});
+});
+
+async function captureCard(){
+ if(typeof html2canvas === "undefined") throw new Error("مكتبة تصوير البطاقة غير متاحة.");
+ return await html2canvas($("studentCard"),{scale:3, backgroundColor:"#ffffff", useCORS:true, logging:false});
+}
+
+$("imageButton").addEventListener("click",async function(){
+ const button = this;
+ const oldText = button.innerHTML;
+ try{
+  button.disabled = true;
+  button.textContent = "جارٍ تجهيز الصورة...";
+  const canvas = await captureCard();
+  const link = document.createElement("a");
+  link.download = "Smart-Attendance-Student.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+ }catch(error){
+  alert("حدث خطأ أثناء إنشاء الصورة: " + error.message);
+ }finally{
+  button.disabled = false;
+  button.innerHTML = oldText;
+ }
+});
+
+$("pdfButton").addEventListener("click",async function(){
+ const button = this;
+ const oldText = button.innerHTML;
+ try{
+  button.disabled = true;
+  button.textContent = "جارٍ تجهيز PDF...";
+  const canvas = await captureCard();
+  const image = canvas.toDataURL("image/png");
+  const {jsPDF} = window.jspdf;
+  const pdf = new jsPDF({orientation:"portrait", unit:"mm", format:"a5"});
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 9;
+  const maxWidth = pageWidth - margin*2;
+  const maxHeight = pageHeight - margin*2;
+  let width = maxWidth;
+  let height = canvas.height * width / canvas.width;
+  if(height > maxHeight){
+   height = maxHeight;
+   width = canvas.width * height / canvas.height;
+  }
+  const x = (pageWidth - width) / 2;
+  const y = (pageHeight - height) / 2;
+  pdf.addImage(image, "PNG", x, y, width, height);
+  pdf.save("Smart-Attendance-Student.pdf");
+ }catch(error){
+  alert("حدث خطأ أثناء إنشاء PDF: " + error.message);
+ }finally{
+  button.disabled = false;
+  button.innerHTML = oldText;
+ }
+});
+
+function openAdminPassword(){
+ $("adminPasswordModal").style.display = "flex";
+ $("adminPassword").value = "";
+ $("adminPasswordError").style.display = "none";
+}
+
+function closeAdminPassword(){
+ $("adminPasswordModal").style.display = "none";
+}
+
+function verifyAdminPassword(){
+ const password = $("adminPassword").value;
+ if(password !== ADMIN_PASSWORD){
+  $("adminPasswordError").textContent = "كلمة السر غير صحيحة.";
+  $("adminPasswordError").style.display = "block";
+  return;
+ }
+ closeAdminPassword();
+ openImportModal();
+}
+
+function openImportModal(){
+ $("importModal").style.display = "flex";
+}
+
+function closeImportModal(){
+ $("importModal").style.display = "none";
+}
+
+$("studentsFile").addEventListener("change",function(){
+ selectedFile = this.files[0] || null;
+ $("fileName").textContent = selectedFile ? selectedFile.name : "لم يتم اختيار ملف بعد";
+ pendingStudents = [];
+ importStage = "select";
+ $("importResult").style.display = "none";
+ $("previewWrap").style.display = "none";
+ $("importButton").textContent = "فحص الملف واستيراد الطلاب";
+ hideImportError();
+});
+
+function findHeader(headers, aliases){
+ return headers.findIndex(header => {
+  const h = normalizeText(header);
+  return aliases.some(alias => h === normalizeText(alias));
+ });
+}
+
+const aliases = {
+ name: ["الاسم", "اسم الطالب", "الاسم الرباعي", "اسم الطالب رباعي", "name", "fullname", "student name"],
+ nationalId: ["الرقم القومي", "رقم قومي", "الرقم الوطني", "nationalid", "national id", "id"],
+ section: ["الشعبة", "رقم الشعبة", "section", "sectionnumber"],
+ serial: ["المتسلسل", "المسلسل", "رقم الطالب", "serial", "serialnumber"]
+};
+
+function readSpreadsheet(file){
+ return new Promise((resolve,reject)=>{
+  const reader = new FileReader();
+  reader.onload = function(event){
+   try{
+    const data = new Uint8Array(event.target.result);
+    const workbook = XLSX.read(data,{type:"array", cellDates:false});
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet,{header:1, defval:""});
+    if(!rows.length){ reject(new Error("الملف فارغ.")); return; }
+    const headers = rows[0].map(v => String(v));
+    const indexes = {
+     name: findHeader(headers, aliases.name),
+     nationalId: findHeader(headers, aliases.nationalId),
+     section: findHeader(headers, aliases.section),
+     serial: findHeader(headers, aliases.serial)
+    };
+    if(Object.values(indexes).some(i => i < 0)){
+     reject(new Error("لم يتم التعرف على أعمدة الملف.\nتأكد أن الصف الأول يحتوي على: الاسم، الرقم القومي، الشعبة، المتسلسل."));
+     return;
+    }
+    const students = [];
+    for(let i = 1; i < rows.length; i++){
+     const row = rows[i];
+     if(!row || !row.length) continue;
+     const student = {
+      name: String(row[indexes.name] ?? "").trim(),
+      nationalId: normalizeDigits(row[indexes.nationalId]).replace(/\D/g,""),
+      section: Number(normalizeDigits(row[indexes.section])),
+      serial: Number(normalizeDigits(row[indexes.serial]))
+     };
+     if(!student.name && !student.nationalId) continue;
+     students.push(student);
+    }
+    resolve(students);
+   }catch(error){
+    reject(error);
+   }
+  };
+  reader.onerror = () => reject(new Error("تعذرت قراءة الملف."));
+  reader.readAsArrayBuffer(file);
+ });
+}
+
+function getFileArrayBuffer(file){
+ return new Promise((resolve, reject) => {
+  if(file.arrayBuffer){
+   file.arrayBuffer().then(resolve).catch(() => readFileWithReader());
+  } else {
+   readFileWithReader();
+  }
+  function readFileWithReader(){
+   const reader = new FileReader();
+   reader.onload = e => resolve(e.target.result);
+   reader.onerror = () => reject(new Error("تعذر قراءة ملف PDF."));
+   reader.readAsArrayBuffer(file);
+  }
+ });
+}
+
+async function readPDF(file){
+ if(typeof pdfjsLib === "undefined") throw new Error("مكتبة قراءة PDF غير متاحة. تحقق من اتصال الإنترنت.");
+ pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+ const buffer = await getFileArrayBuffer(file);
+ const pdf = await pdfjsLib.getDocument({data:buffer}).promise;
+ const lines = [];
+ for(let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++){
+  const page = await pdf.getPage(pageNumber);
+  const content = await page.getTextContent();
+  const groups = {};
+  content.items.forEach(item => {
+   if(!item.str || !item.str.trim()) return;
+   const y = Math.round(item.transform[5]);
+   if(!groups[y]) groups[y] = [];
+   groups[y].push({x: item.transform[4], text: item.str.trim()});
+  });
+  Object.keys(groups).forEach(y => {
+   const parts = groups[y].sort((a,b) => b.x - a.x);
+   const line = parts.map(p => p.text).join(" ").trim();
+   if(line) lines.push(line);
+  });
+ }
+ return extractStudentsFromPDFLines(lines);
+}
+
+function extractStudentsFromPDFLines(lines){
+ const students = [];
+ for(const originalLine of lines){
+  const line = normalizeDigits(originalLine);
+  const idMatch = line.match(/\d{14}/);
+  if(!idMatch) continue;
+  const nationalId = idMatch[0];
+  const afterId = line.slice(line.indexOf(nationalId) + 14);
+  const numbers = afterId.match(/\d+/g) || [];
+  if(numbers.length < 2) continue;
+  const section = Number(numbers[0]);
+  const serial = Number(numbers[1]);
+  const beforeId = line.slice(0, line.indexOf(nationalId));
+  const name = beforeId.replace(/[|،,:;_\-]+/g," ").replace(/\s+/g," ").trim();
+  if(!name) continue;
+  students.push({name, nationalId, section, serial});
+ }
+ return students;
+}
+
+function validateImportedStudents(students){
+ const errors = [];
+ const valid = [];
+ const nationalIds = new Set();
+ const studentCodes = new Set();
+ students.forEach((student, index) => {
+  const error = validateStudent(student);
+  if(error){
+   errors.push("السطر " + (index + 2) + ": " + error);
+   return;
+  }
+  if(nationalIds.has(student.nationalId)){
+   errors.push("تكرار الرقم القومي: " + student.nationalId);
+   return;
+  }
+  const code = makeStudentCode(student);
+  if(studentCodes.has(code)){
+   errors.push("تكرار كود الطالب: " + code);
+   return;
+  }
+  nationalIds.add(student.nationalId);
+  studentCodes.add(code);
+  valid.push({
+   name: student.name,
+   nationalId: student.nationalId,
+   section: student.section,
+   serial: student.serial,
+   studentCode: code
+  });
+ });
+ return {valid, errors};
+}
+
+function showPreview(students){
+ const body = $("previewBody");
+ body.innerHTML = "";
+ students.slice(0,30).forEach(student => {
+  const tr = document.createElement("tr");
+  [student.name, student.nationalId, student.section, student.serial].forEach(value => {
+   const td = document.createElement("td");
+   td.textContent = value;
+   tr.appendChild(td);
+  });
+  body.appendChild(tr);
+ });
+ $("previewNote").textContent = "عدد السجلات: " + students.length + (students.length > 30 ? " — يتم عرض أول 30 سجلًا فقط." : "");
+ $("previewWrap").style.display = "block";
+}
+
+async function importStudents(){
+ hideImportError();
+ const button = $("importButton");
+ if(importStage === "confirm"){
+  if(!pendingStudents.length){
+   showImportError("لا توجد بيانات صالحة للحفظ.");
+   return;
+  }
+  try{
+   saveStudents(pendingStudents);
+   $("importResult").textContent = "تم حفظ بيانات الطلاب بنجاح.\nإجمالي الطلاب: " + pendingStudents.length + "\nيمكن الآن للطلاب التحقق من بياناتهم.";
+   $("importResult").style.display = "block";
+   button.textContent = "تم الحفظ بنجاح";
+   button.disabled = true;
+   pendingStudents = [];
+  }catch(error){
+   showImportError("تعذر حفظ البيانات على الجهاز.");
+  }
+  return;
+ }
+ if(!selectedFile){
+  showImportError("من فضلك اختر ملفًا أولًا.");
+  return;
+ }
+ const extension = selectedFile.name.split(".").pop().toLowerCase();
+ if(!["xlsx","xls","csv","pdf"].includes(extension)){
+  showImportError("نوع الملف غير مدعوم.");
+  return;
+ }
+ try{
+  button.disabled = true;
+  button.textContent = "جارٍ قراءة الملف...";
+  let students = [];
+  if(extension === "pdf"){
+   students = await readPDF(selectedFile);
+  } else {
+   students = await readSpreadsheet(selectedFile);
+  }
+  if(!students.length){
+   throw new Error("لم يتم العثور على سجلات طلاب.\nراجع الملف وتأكد من ترتيب البيانات.");
+  }
+  const result = validateImportedStudents(students);
+  if(result.errors.length){
+   const previewErrors = result.errors.slice(0,8).join("\n");
+   throw new Error("توجد أخطاء في الملف:\n" + previewErrors + (result.errors.length > 8 ? "\nوهناك أخطاء أخرى عددها: " + (result.errors.length - 8) : ""));
+  }
+  pendingStudents = result.valid;
+  showPreview(pendingStudents);
+  $("importResult").textContent = "تم فحص الملف بنجاح.\nعدد الطلاب: " + pendingStudents.length + "\nراجع المعاينة ثم اضغط تأكيد الحفظ.";
+  $("importResult").style.display = "block";
+  importStage = "confirm";
+  button.textContent = "تأكيد حفظ بيانات الطلاب";
+ }catch(error){
+  showImportError(error.message || "حدث خطأ أثناء قراءة الملف.");
+ }finally{
+  button.disabled = false;
+  if(importStage === "select"){
+   button.textContent = "إعادة فحص الملف";
+  }
+ }
+}
+
+$("adminPasswordModal").addEventListener("click", function(e){
+ if(e.target === this) closeAdminPassword();
+});
+
+$("importModal").addEventListener("click", function(e){
+ if(e.target === this) closeImportModal();
+});
+
+$("adminPassword").addEventListener("keydown", function(e){
+ if(e.key === "Enter") verifyAdminPassword();
+});
+
+$("nationalId").addEventListener("input", function(){
+ this.value = normalizeDigits(this.value).replace(/\D/g,"").slice(0,14);
+});
+
+$("serialNumber").addEventListener("input", function(){
+ this.value = normalizeDigits(this.value).replace(/\D/g,"").slice(0,2);
+});
+
+window.addEventListener("load", function(){
+ const sectionSelect = $("section");
+ if(sectionSelect && sectionSelect.options.length <= 1){
+  for(let i = 1; i <= 16; i++){
+   const option = document.createElement("option");
+   option.value = i;
+   option.textContent = "الشعبة " + i;
+   sectionSelect.appendChild(option);
+  }
+ }
+ if(typeof pdfjsLib !== "undefined"){
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+ }
+});
+</script>
+
+</body>
+</html>
